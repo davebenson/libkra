@@ -35,6 +35,8 @@ namespace kra
 
 		unsigned int width;
 		unsigned int height;
+		unsigned int x_res = 72;  // DPI (dots per inch) - default 72
+		unsigned int y_res = 72;
 
 		ColorSpace color_space;
 

@@ -100,4 +100,30 @@ namespace kra
                 return "not supported";
         }
     }
+
+    // ---------------------------------------------------------------------------------------------------------------------
+    // Try to match the input string with one of the constants of the LayerType-enum
+    // ---------------------------------------------------------------------------------------------------------------------
+    bool layer_type_from_string(const std::string &node_type, LayerType *out)
+    {
+        if (node_type.compare("paintlayer") == 0)
+        {
+            *out = PAINT_LAYER;
+            return true;
+        }
+        else if (node_type.compare("grouplayer") == 0)
+        {
+            *out = GROUP_LAYER;
+            return true;
+        }
+        else if (node_type.compare("shapelayer") == 0)
+        {
+            *out = VECTOR_LAYER;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 };

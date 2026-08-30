@@ -233,7 +233,7 @@ elif env['platform'] == 'osx':
     ])
 
     if env['target'] == 'debug':
-        env.Append(CCFLAGS=['-Og', 'g'])
+        env.Append(CCFLAGS=['-Og', '-g'])
     elif env['target'] == 'release':
         env.Append(CCFLAGS=['-O3'])
 
@@ -287,20 +287,49 @@ elif env['platform'] == 'windows':
 
 env.Append(CPPPATH=['.', 'zlib/'])
 env.Append(CPPPATH=['src/'])
-sources = [
+env.Append(CPPPATH=['lunasvg/include/'])
+env.Append(CPPPATH=['lunasvg/source/'])
+env.Append(CPPPATH=['lunasvg/plutovg/include/'])
+env.Append(CPPPATH=['lunasvg/plutovg/source/'])
+
+# Common library sources (without main programs)
+lib_sources = [
     Glob('libpng/*.c',exclude=['libpng/pngtest.c']),
-    Glob('libkra_cl/*.cpp'), 
     Glob('libkra/*.cpp'),
     'tinyxml2/tinyxml2.cpp',
     Glob('zlib/*.c'),
     Glob('zlib/contrib/minizip/unzip.c'),
-    Glob('zlib/contrib/minizip/ioapi.c')
+    Glob('zlib/contrib/minizip/ioapi.c'),
+    # lunasvg sources
+    Glob('lunasvg/source/*.cpp'),
+    # plutovg sources
+    'lunasvg/plutovg/source/plutovg-blend.c',
+    'lunasvg/plutovg/source/plutovg-canvas.c',
+    'lunasvg/plutovg/source/plutovg-font.c',
+    'lunasvg/plutovg/source/plutovg-matrix.c',
+    'lunasvg/plutovg/source/plutovg-paint.c',
+    'lunasvg/plutovg/source/plutovg-path.c',
+    'lunasvg/plutovg/source/plutovg-rasterize.c',
+    'lunasvg/plutovg/source/plutovg-surface.c',
+    'lunasvg/plutovg/source/plutovg-ft-math.c',
+    'lunasvg/plutovg/source/plutovg-ft-raster.c',
+    'lunasvg/plutovg/source/plutovg-ft-stroker.c'
 ]
 
+# libkra_cl sources
+libkra_cl_sources = lib_sources + Glob('libkra_cl/*.cpp')
+
+# kra-filtered-export sources
+filtered_export_sources = lib_sources + ['examples/kra-filtered-export.cpp']
+
 ###############
-#BUILD LIB#####
+#BUILD#########
 ###############
 
-library = env.Program(target=env['target_path'] + env['target_name'], source=sources)
+# Build libkra_cl
+library = env.Program(target=env['target_path'] + env['target_name'], source=libkra_cl_sources)
 
-Default(library)
+# Build kra-filtered-export
+filtered_export = env.Program(target=env['target_path'] + 'kra-filtered-export', source=filtered_export_sources)
+
+Default(library, filtered_export)

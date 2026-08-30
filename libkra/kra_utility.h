@@ -21,7 +21,8 @@ namespace kra
     enum LayerType
     {
         PAINT_LAYER,
-        GROUP_LAYER
+        GROUP_LAYER,
+        VECTOR_LAYER
     };
 
     enum ColorSpace
@@ -49,6 +50,8 @@ namespace kra
     ColorSpace get_color_space(const std::string &p_color_space_name);
 
     const std::string get_color_space_name(ColorSpace p_color_space);
+
+    bool layer_type_from_string(const std::string &node_type, LayerType *out);
 };
 
 #endif // KRA_UTILITY_H

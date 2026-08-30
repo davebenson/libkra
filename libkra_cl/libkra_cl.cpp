@@ -116,10 +116,36 @@ void save_layer_to_image(const std::unique_ptr<kra::ExportedLayer> &layer)
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+// Compose all layers into a single image buffer and save to PNG
+// ---------------------------------------------------------------------------------------------------------------------
+void compose_and_save_document(const std::unique_ptr<kra::Document> &document, const std::string &output_filename)
+{
+	unsigned int width = document->width;
+	unsigned int height = document->height;
+
+	// Allocate RGBA buffer initialized to transparent
+	std::vector<uint8_t> composed_buffer(width * height * 4, 0);
+
+	// Compose each layer onto the buffer (from bottom to top)
+	// Note: layers are stored in reverse order (top layer first), so iterate backwards
+	for (auto it = document->layers.rbegin(); it != document->layers.rend(); ++it)
+	{
+		const auto &layer = *it;
+		std::fprintf(stderr, "Composing layer: %s (type %d)\n", layer->name.c_str(), layer->type);
+		layer->compose(width, height, document->x_res, composed_buffer.data());
+	}
+
+	// Save the composed result
+	std::fprintf(stderr, "Writing composed image to %s\n", output_filename.c_str());
+	write_data_to_png(output_filename.c_str(), width, height, composed_buffer.data());
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 // Process each layer and, depending on the type, either call the saving method or recursively call this method again.
 // ---------------------------------------------------------------------------------------------------------------------
 void process_layer(const std::unique_ptr<kra::Document> &document, const std::unique_ptr<kra::ExportedLayer> &layer)
 {
+        std::fprintf(stderr, "processing layer %s: type %d\n", layer->name.c_str(), layer->type);
 	switch (layer->type)
 	{
 	case kra::PAINT_LAYER:
@@ -135,6 +161,9 @@ void process_layer(const std::unique_ptr<kra::Document> &document, const std::un
 			process_layer(document, child);
 		}
 		break;
+        default:
+                std::fprintf(stderr, "unhandled layer type %d\n", layer->type);
+                break;
 	}
 }
 

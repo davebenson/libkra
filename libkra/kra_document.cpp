@@ -52,6 +52,8 @@ namespace kra
         const tinyxml2::XMLElement *xml_element = xml_document.FirstChildElement("DOC")->FirstChildElement("IMAGE");
         width = xml_element->UnsignedAttribute("width", 0);
         height = xml_element->UnsignedAttribute("height", 0);
+        x_res = xml_element->UnsignedAttribute("x-res", 72);
+        y_res = xml_element->UnsignedAttribute("y-res", 72);
         name = xml_element->Attribute("name");
         std::string color_space_name = xml_element->Attribute("colorspacename");
         /* Each separate layer also has its own color space in KRA, so this color_space isn't really important */
@@ -166,18 +168,10 @@ namespace kra
             /* Check the type of the layer and proceed from there... */
             std::string node_type = layer_node->Attribute("nodetype");
             std::unique_ptr<Layer> layer = std::make_unique<Layer>();
-            /* If it is not a paintlayer nor a grouplayer then we don't support it! */
-            if (node_type == "paintlayer" || node_type == "grouplayer")
-            {
-                if (node_type == "paintlayer")
-                {
-                    layer->type = PAINT_LAYER;
-                }
-                else
-                {
-                    layer->type = GROUP_LAYER;
-                }
 
+            /* Try to determine the layer type from the node type string */
+            if (layer_type_from_string(node_type, &layer->type))
+            {
                 layer->import_attributes(name, p_file, layer_node);
 
                 if (verbosity_level >= VERBOSE)

@@ -24,9 +24,11 @@ namespace kra
     private:
         void _import_paint_attributes(const std::string &p_name, unzFile &p_file, const tinyxml2::XMLElement *p_xml_element);
         void _import_group_attributes(const std::string &p_name, unzFile &p_file, const tinyxml2::XMLElement *p_xml_element);
+        void _import_vector_attributes(const std::string &p_name, unzFile &p_file, const tinyxml2::XMLElement *p_xml_element);
 
         void _print_paint_layer_attributes() const;
         void _print_group_layer_attributes() const;
+        void _print_vector_layer_attributes() const;
 
     public:
         std::string filename;
@@ -49,11 +51,21 @@ namespace kra
         // GROUP_LAYER
         std::vector<std::unique_ptr<Layer>> children;
 
+        // VECTOR_LAYER
+        std::vector<unsigned char> svg_content;
+
         void import_attributes(const std::string &p_name, unzFile &p_file, const tinyxml2::XMLElement *p_xml_element);
 
         std::unique_ptr<ExportedLayer> get_exported_layer() const;
 
         void print_layer_attributes() const;
+
+        // Compose this layer on top of the existing RGBA buffer
+        // For paint layers, blends the layer data onto the buffer
+        // For vector layers, rasterizes the SVG and blends it onto the buffer
+        // rgba_inout: buffer of size document_width * document_height * 4 (RGBA)
+        // document_dpi: document DPI for proper SVG scaling
+        void compose(unsigned int document_width, unsigned int document_height, float document_dpi, uint8_t *rgba_inout) const;
     };
 };
 

@@ -61,6 +61,10 @@ namespace kra
         // Number of elements in each pixel, is equal to 4 for RGBA.
         unsigned int pixel_size;
 
+        // Default pixel color (for layers with no tile data)
+        uint8_t default_pixel[4];
+        bool has_default_pixel;
+
         void import_attributes(const std::vector<unsigned char> &p_layer_content);
 
         std::vector<uint8_t> get_composed_data(ColorSpace color_space) const;
