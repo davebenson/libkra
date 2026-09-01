@@ -11,3 +11,4 @@ In chronological order based on the first contribution.
 
 - [Sai Asish Y (SAY-5)](https://github.com/SAY-5)
 - [Chris Herborth (Taffer)](https://github.com/Taffer)
+- [Dave Benson (davebenson)](https://github.com/davebenson)
