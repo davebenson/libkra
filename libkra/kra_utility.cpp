@@ -126,4 +126,14 @@ namespace kra
             return false;
         }
     }
+    const char * layer_type_to_string(LayerType type)
+    {
+        switch (type)
+        {
+          case PAINT_LAYER: return "paint";
+          case GROUP_LAYER: return "group";
+          case VECTOR_LAYER: return "vector";
+        }
+        return 0;
+    }
 };

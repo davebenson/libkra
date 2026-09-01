@@ -52,6 +52,7 @@ namespace kra
     const std::string get_color_space_name(ColorSpace p_color_space);
 
     bool layer_type_from_string(const std::string &node_type, LayerType *out);
+    const char * layer_type_to_string(LayerType type);
 };
 
 #endif // KRA_UTILITY_H
