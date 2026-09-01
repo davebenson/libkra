@@ -49,6 +49,8 @@ namespace kra
 
         void _update_dimensions();
 
+        std::vector<unsigned int> _get_pixel_byte_order(ColorSpace color_space) const;
+
         int _lzff_decompress(const void *input, const int length, void *output, int maxout) const;
 
     public:
@@ -61,9 +63,17 @@ namespace kra
         // Number of elements in each pixel, is equal to 4 for RGBA.
         unsigned int pixel_size;
 
+        // The colour of every pixel that is not covered by a tile, as stored in the archive.
+        // These are the raw bytes in the layer's own channel order; use get_composed_default_pixel()
+        // to get them in the same order as get_composed_data() returns.
+        // By default, set to a vector of size `pixel_size` filled with zeroes.
+        std::vector<uint8_t> default_pixel;
+
         void import_attributes(const std::vector<unsigned char> &p_layer_content);
 
         std::vector<uint8_t> get_composed_data(ColorSpace color_space) const;
+
+        std::vector<uint8_t> get_composed_default_pixel(ColorSpace color_space) const;
 
         unsigned int get_width() const;
         unsigned int get_height() const;

@@ -37,6 +37,10 @@ namespace kra
         unsigned int pixel_size;
         std::vector<uint8_t> data;
 
+        /* `data` only covers the [left, right) x [top, bottom) region the layer actually painted. */
+        /* Every pixel outside of that region has the colour below, in the same channel order as `data`. */
+        std::vector<uint8_t> default_pixel;
+
         // GROUP_LAYER
         std::vector<std::string> child_uuids;
     };
