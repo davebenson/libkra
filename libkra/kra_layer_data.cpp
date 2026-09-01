@@ -76,6 +76,43 @@ namespace kra
     }
 
     // ---------------------------------------------------------------------------------------------------------------------
+    // Get the order in which the bytes of a single stored pixel have to be read to obtain the channel order we export
+    // ---------------------------------------------------------------------------------------------------------------------
+    std::vector<unsigned int> LayerData::_get_pixel_byte_order(ColorSpace color_space) const
+    {
+        /* Due to historical reasons the red and blue pixel values are swapped in the case of RGBA & RGBA16 */
+        /* This is to be rectified by using a special vector with swapped values */
+        std::vector<unsigned int> pixel_vector(pixel_size);
+        std::iota(std::begin(pixel_vector), std::end(pixel_vector), 0);
+        if (color_space == ColorSpace::RGBA)
+        {
+            unsigned int bytes_per_channel = 1;
+            std::swap_ranges(pixel_vector.begin(), pixel_vector.begin() + bytes_per_channel, pixel_vector.begin() + 2 * bytes_per_channel);
+        }
+        else if (color_space == ColorSpace::RGBA16)
+        {
+            unsigned int bytes_per_channel = 2;
+            std::swap_ranges(pixel_vector.begin(), pixel_vector.begin() + bytes_per_channel, pixel_vector.begin() + 2 * bytes_per_channel);
+        }
+        return pixel_vector;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------------
+    // Get the layer's default pixel in the same channel order as get_composed_data
+    // ---------------------------------------------------------------------------------------------------------------------
+    std::vector<uint8_t> LayerData::get_composed_default_pixel(ColorSpace color_space) const
+    {
+        const std::vector<unsigned int> pixel_vector = _get_pixel_byte_order(color_space);
+
+        std::vector<uint8_t> composed_pixel(pixel_size);
+        for (unsigned int i = 0; i < pixel_size; i++)
+        {
+            composed_pixel[i] = default_pixel[pixel_vector[i]];
+        }
+        return composed_pixel;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------------
     // Decompress & compose the binary data of the entire layer
     // ---------------------------------------------------------------------------------------------------------------------
     std::vector<uint8_t> LayerData::get_composed_data(ColorSpace color_space) const
@@ -102,20 +139,7 @@ namespace kra
 
             // TODO: Conversion between color profiles could potentially be done here?
 
-            /* Due to historical reasons the red and blue pixel values are swapped in the case of RGBA & RGBA16 */
-            /* This is to be rectified by using a special vector with swapped values */
-            std::vector<unsigned int> pixel_vector(pixel_size);
-            std::iota(std::begin(pixel_vector), std::end(pixel_vector), 0);
-            if (color_space == ColorSpace::RGBA)
-            {
-                unsigned int bytes_per_channel = 1;
-                std::swap_ranges(pixel_vector.begin(), pixel_vector.begin() + bytes_per_channel, pixel_vector.begin() + 2 * bytes_per_channel);
-            }
-            else if (color_space == ColorSpace::RGBA16)
-            {
-                unsigned int bytes_per_channel = 2;
-                std::swap_ranges(pixel_vector.begin(), pixel_vector.begin() + bytes_per_channel, pixel_vector.begin() + 2 * bytes_per_channel);
-            }
+            const std::vector<unsigned int> pixel_vector = _get_pixel_byte_order(color_space);
 
             /* Data is saved in following format: */
             /* (R0 R1 R2...) (G0 G1 G2...) (B0 B1 B2...) (A0 A1 A2...)*/
