@@ -116,6 +116,23 @@ void save_layer_to_image(const std::unique_ptr<kra::ExportedLayer> &layer)
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+// Write the raw SVG document of a vector layer to a file
+// ---------------------------------------------------------------------------------------------------------------------
+void save_layer_to_svg(const std::unique_ptr<kra::ExportedLayer> &layer)
+{
+	const std::string file_name = layer->name + ".svg";
+
+	std::FILE *file = std::fopen(file_name.c_str(), "wb");
+	if (file == NULL)
+	{
+		std::fprintf(stderr, "ERROR: Could not open '%s' for writing.\n", file_name.c_str());
+		return;
+	}
+	std::fwrite(layer->svg_content.data(), 1, layer->svg_content.size(), file);
+	std::fclose(file);
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 // Process each layer and, depending on the type, either call the saving method or recursively call this method again.
 // ---------------------------------------------------------------------------------------------------------------------
 void process_layer(const std::unique_ptr<kra::Document> &document, const std::unique_ptr<kra::ExportedLayer> &layer)
@@ -134,6 +151,9 @@ void process_layer(const std::unique_ptr<kra::Document> &document, const std::un
 
 			process_layer(document, child);
 		}
+		break;
+	case kra::VECTOR_LAYER:
+		save_layer_to_svg(layer);
 		break;
 	}
 }

@@ -35,6 +35,10 @@ namespace kra
 
 		unsigned int width;
 		unsigned int height;
+		/* Document resolution in DPI. Krita falls back to 100 when the attribute is */
+		/* absent or not positive, so an unset resolution is not the same as 0. */
+		double x_res = 100.0;
+		double y_res = 100.0;
 
 		ColorSpace color_space;
 
