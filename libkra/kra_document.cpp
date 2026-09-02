@@ -9,6 +9,21 @@
 namespace kra
 {
     // ---------------------------------------------------------------------------------------------------------------------
+    // Read a resolution attribute, in DPI, from the IMAGE element
+    // ---------------------------------------------------------------------------------------------------------------------
+    static double _read_resolution(const tinyxml2::XMLElement *p_xml_element, const char *p_attribute_name)
+    {
+        /* Krita falls back to 100 DPI when the attribute is missing, unparseable or not positive. */
+        /* See KisKraLoader::loadXML() in plugins/impex/libkra/kis_kra_loader.cpp. */
+        double value = 0.0;
+        if (p_xml_element->QueryDoubleAttribute(p_attribute_name, &value) == tinyxml2::XML_SUCCESS && value > 0.0)
+        {
+            return value;
+        }
+        return 100.0;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------------
     // Load a KRA/KRZ archive from file and import document properties and layers
     // ---------------------------------------------------------------------------------------------------------------------
     int Document::load(const std::wstring &p_path)
@@ -52,6 +67,8 @@ namespace kra
         const tinyxml2::XMLElement *xml_element = xml_document.FirstChildElement("DOC")->FirstChildElement("IMAGE");
         width = xml_element->UnsignedAttribute("width", 0);
         height = xml_element->UnsignedAttribute("height", 0);
+        x_res = _read_resolution(xml_element, "x-res");
+        y_res = _read_resolution(xml_element, "y-res");
         name = xml_element->Attribute("name");
         std::string color_space_name = xml_element->Attribute("colorspacename");
         /* Each separate layer also has its own color space in KRA, so this color_space isn't really important */
@@ -142,6 +159,8 @@ namespace kra
         fprintf(stdout, "   >> name = %s\n", name.c_str());
         fprintf(stdout, "   >> width = %i\n", width);
         fprintf(stdout, "   >> height = %i\n", height);
+        fprintf(stdout, "   >> x_res = %g\n", x_res);
+        fprintf(stdout, "   >> y_res = %g\n", y_res);
         fprintf(stdout, "   >> color_space = %i\n", color_space);
     }
 
@@ -166,18 +185,10 @@ namespace kra
             /* Check the type of the layer and proceed from there... */
             std::string node_type = layer_node->Attribute("nodetype");
             std::unique_ptr<Layer> layer = std::make_unique<Layer>();
-            /* If it is not a paintlayer nor a grouplayer then we don't support it! */
-            if (node_type == "paintlayer" || node_type == "grouplayer")
-            {
-                if (node_type == "paintlayer")
-                {
-                    layer->type = PAINT_LAYER;
-                }
-                else
-                {
-                    layer->type = GROUP_LAYER;
-                }
 
+            /* Try to determine the layer type from the node type string */
+            if (layer_type_from_string(node_type, &layer->type))
+            {
                 layer->import_attributes(name, p_file, layer_node);
 
                 if (verbosity_level >= VERBOSE)

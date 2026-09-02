@@ -12,6 +12,7 @@ namespace kra
     // This class represents an exported version of a Layer */
     /* In the case of a PAINT_LAYER, this class stores the decompressed data of the entire layer */
     /* In the case of a GROUP_LAYER, this class stores a vector of UUIDs of its child layers */
+    /* In the case of a VECTOR_LAYER, this class stores the raw SVG document describing the shapes */
     class ExportedLayer
     {
     public:
@@ -43,6 +44,9 @@ namespace kra
 
         // GROUP_LAYER
         std::vector<std::string> child_uuids;
+
+        // VECTOR_LAYER
+        std::vector<unsigned char> svg_content;
     };
 };
 
